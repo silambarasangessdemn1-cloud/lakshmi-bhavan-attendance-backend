@@ -1,0 +1,14 @@
+{
+  "staff": [],
+  "attendance": [],
+  "loanAdvances": [],
+  "payments": [],
+  "settings": {
+    "companyName": "Shree Lakshmi Bhavan",
+    "tagline": "Staff Salary & Attendance Manager",
+    "address": "",
+    "phone": "",
+    "currency": "INR",
+    "currencySymbol": "₹"
+  }
+}
