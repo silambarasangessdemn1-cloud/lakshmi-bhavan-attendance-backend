@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const adminController_js_1 = require("../controllers/adminController.js");
+const router = (0, express_1.Router)();
+router.get('/health', adminController_js_1.getHealth);
+router.post('/reset', adminController_js_1.resetAllData);
+router.get('/export', adminController_js_1.exportAllData);
+router.post('/import', adminController_js_1.importAllData);
+exports.default = router;

@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const attendanceController_js_1 = require("../controllers/attendanceController.js");
+const router = (0, express_1.Router)();
+router.get('/', attendanceController_js_1.getAttendance);
+router.post('/record', attendanceController_js_1.saveAttendanceRecord);
+router.post('/bulk', attendanceController_js_1.saveBulkAttendance);
+router.post('/replace-date', attendanceController_js_1.replaceDateAttendance);
+router.post('/mark-all-present', attendanceController_js_1.markAllPresentForDate);
+router.delete('/', attendanceController_js_1.deleteAttendance);
+exports.default = router;
