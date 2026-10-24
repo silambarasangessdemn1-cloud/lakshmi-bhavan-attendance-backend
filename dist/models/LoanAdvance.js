@@ -40,7 +40,7 @@ const LoanAdvanceSchema = new mongoose_1.Schema({
     staffId: { type: String, required: true, index: true },
     type: {
         type: String,
-        enum: ['advance', 'loan_issue', 'loan_repay'],
+        enum: ['advance', 'advance_repay', 'loan_issue', 'loan_repay'],
         required: true,
     },
     amount: { type: Number, required: true, min: 0 },
