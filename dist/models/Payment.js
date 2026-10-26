@@ -41,6 +41,7 @@ const PaymentSchema = new mongoose_1.Schema({
     month: { type: String, required: true, index: true },
     staffId: { type: String, required: true, index: true },
     staffName: { type: String, required: true },
+    branchId: { type: String, default: '', index: true },
     dailyWage: { type: Number, default: 0 },
     daysPresent: { type: Number, default: 0 },
     otHours: { type: Number, default: 0 },

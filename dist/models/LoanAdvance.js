@@ -38,6 +38,7 @@ const mongoose_1 = __importStar(require("mongoose"));
 const LoanAdvanceSchema = new mongoose_1.Schema({
     id: { type: String, required: true, unique: true },
     staffId: { type: String, required: true, index: true },
+    branchId: { type: String, default: '', index: true },
     type: {
         type: String,
         enum: ['advance', 'advance_repay', 'loan_issue', 'loan_repay'],

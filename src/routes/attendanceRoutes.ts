@@ -7,8 +7,11 @@ import {
   markAllPresentForDate,
   deleteAttendance,
 } from '../controllers/attendanceController.js';
+import { optionalAuth } from '../middleware/authMiddleware.js';
 
 const router = Router();
+
+router.use(optionalAuth);
 
 router.get('/', getAttendance);
 router.post('/record', saveAttendanceRecord);

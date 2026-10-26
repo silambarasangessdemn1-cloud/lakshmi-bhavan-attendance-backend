@@ -5,6 +5,7 @@ export type LoanAdvanceType = 'advance' | 'advance_repay' | 'loan_issue' | 'loan
 export interface ILoanAdvance extends Document {
   id: string;
   staffId: string;
+  branchId?: string;
   type: LoanAdvanceType;
   amount: number;
   date: string; // YYYY-MM-DD
@@ -19,6 +20,7 @@ const LoanAdvanceSchema = new Schema<ILoanAdvance>(
   {
     id: { type: String, required: true, unique: true },
     staffId: { type: String, required: true, index: true },
+    branchId: { type: String, default: '', index: true },
     type: {
       type: String,
       enum: ['advance', 'advance_repay', 'loan_issue', 'loan_repay'],

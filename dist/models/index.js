@@ -19,3 +19,5 @@ __exportStar(require("./Attendance.js"), exports);
 __exportStar(require("./LoanAdvance.js"), exports);
 __exportStar(require("./Payment.js"), exports);
 __exportStar(require("./Settings.js"), exports);
+__exportStar(require("./Branch.js"), exports);
+__exportStar(require("./User.js"), exports);

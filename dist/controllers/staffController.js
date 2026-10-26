@@ -6,12 +6,30 @@ const Attendance_js_1 = require("../models/Attendance.js");
 const Payment_js_1 = require("../models/Payment.js");
 const LoanAdvance_js_1 = require("../models/LoanAdvance.js");
 const db_js_1 = require("../config/db.js");
-const getStaff = async (_req, res) => {
+const getStaff = async (req, res) => {
     try {
-        if ((0, db_js_1.isUsingFallback)()) {
-            return res.json({ success: true, count: db_js_1.fallbackStore.staff.length, data: db_js_1.fallbackStore.staff });
+        const user = req.user;
+        const requestedBranchId = req.query.branchId || '';
+        // If branch admin, strictly filter to their branch
+        let filterBranchId = '';
+        if (user && user.role !== 'superadmin' && user.branchId) {
+            filterBranchId = user.branchId;
         }
-        const staff = await Staff_js_1.StaffModel.find().sort({ createdAt: -1 });
+        else if (requestedBranchId && requestedBranchId !== 'all') {
+            filterBranchId = requestedBranchId;
+        }
+        if ((0, db_js_1.isUsingFallback)()) {
+            let list = db_js_1.fallbackStore.staff || [];
+            if (filterBranchId) {
+                list = list.filter((s) => s.branchId === filterBranchId);
+            }
+            return res.json({ success: true, count: list.length, data: list });
+        }
+        const query = {};
+        if (filterBranchId) {
+            query.branchId = filterBranchId;
+        }
+        const staff = await Staff_js_1.StaffModel.find(query).sort({ createdAt: -1 });
         res.json({ success: true, count: staff.length, data: staff });
     }
     catch (error) {
@@ -46,10 +64,16 @@ const createStaff = async (req, res) => {
         if (!trimmedId || !trimmedName) {
             return res.status(400).json({ success: false, message: 'Staff ID and Name are required.' });
         }
+        // Determine branchId
+        let branchId = (body.branchId || '').trim();
+        if (req.user && req.user.role !== 'superadmin' && req.user.branchId) {
+            branchId = req.user.branchId;
+        }
         const payload = {
             ...body,
             id: trimmedId,
             name: trimmedName,
+            branchId: branchId || undefined,
             wage: Number(body.wage) || 0,
             otRate: Number(body.otRate) || 0,
             loanStart: Math.max(0, Number(body.loanStart) || 0),

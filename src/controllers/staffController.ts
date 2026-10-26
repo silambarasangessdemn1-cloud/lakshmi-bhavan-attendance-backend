@@ -5,12 +5,33 @@ import { PaymentModel } from '../models/Payment.js';
 import { LoanAdvanceModel } from '../models/LoanAdvance.js';
 import { isUsingFallback, fallbackStore, saveFallbackToDisk } from '../config/db.js';
 
-export const getStaff = async (_req: Request, res: Response) => {
+export const getStaff = async (req: Request, res: Response) => {
   try {
-    if (isUsingFallback()) {
-      return res.json({ success: true, count: fallbackStore.staff.length, data: fallbackStore.staff });
+    const user = req.user;
+    const requestedBranchId = (req.query.branchId as string) || '';
+
+    // If branch admin, strictly filter to their branch
+    let filterBranchId = '';
+    if (user && user.role !== 'superadmin' && user.branchId) {
+      filterBranchId = user.branchId;
+    } else if (requestedBranchId && requestedBranchId !== 'all') {
+      filterBranchId = requestedBranchId;
     }
-    const staff = await StaffModel.find().sort({ createdAt: -1 });
+
+    if (isUsingFallback()) {
+      let list = fallbackStore.staff || [];
+      if (filterBranchId) {
+        list = list.filter((s) => s.branchId === filterBranchId);
+      }
+      return res.json({ success: true, count: list.length, data: list });
+    }
+
+    const query: any = {};
+    if (filterBranchId) {
+      query.branchId = filterBranchId;
+    }
+
+    const staff = await StaffModel.find(query).sort({ createdAt: -1 });
     res.json({ success: true, count: staff.length, data: staff });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
@@ -43,10 +64,17 @@ export const createStaff = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: 'Staff ID and Name are required.' });
     }
 
+    // Determine branchId
+    let branchId = (body.branchId || '').trim();
+    if (req.user && req.user.role !== 'superadmin' && req.user.branchId) {
+      branchId = req.user.branchId;
+    }
+
     const payload = {
       ...body,
       id: trimmedId,
       name: trimmedName,
+      branchId: branchId || undefined,
       wage: Number(body.wage) || 0,
       otRate: Number(body.otRate) || 0,
       loanStart: Math.max(0, Number(body.loanStart) || 0),

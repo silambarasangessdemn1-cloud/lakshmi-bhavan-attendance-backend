@@ -38,6 +38,7 @@ const mongoose_1 = __importStar(require("mongoose"));
 const StaffSchema = new mongoose_1.Schema({
     id: { type: String, required: true, unique: true, trim: true },
     name: { type: String, required: true, trim: true },
+    branchId: { type: String, default: '', index: true, trim: true },
     designation: { type: String, required: true, default: 'Staff', trim: true },
     phone: { type: String, default: '', trim: true },
     wage: { type: Number, required: true, default: 0, min: 0 },

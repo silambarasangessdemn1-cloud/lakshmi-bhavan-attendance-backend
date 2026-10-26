@@ -4,8 +4,11 @@ import {
   recordPayment,
   deletePayment,
 } from '../controllers/paymentController.js';
+import { optionalAuth } from '../middleware/authMiddleware.js';
 
 const router = Router();
+
+router.use(optionalAuth);
 
 router.get('/', getPayments);
 router.post('/', recordPayment);

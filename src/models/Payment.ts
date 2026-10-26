@@ -8,6 +8,7 @@ export interface IPayment extends Document {
   month: string;
   staffId: string;
   staffName: string;
+  branchId?: string;
   dailyWage: number;
   daysPresent: number;
   otHours: number;
@@ -33,6 +34,7 @@ const PaymentSchema = new Schema<IPayment>(
     month: { type: String, required: true, index: true },
     staffId: { type: String, required: true, index: true },
     staffName: { type: String, required: true },
+    branchId: { type: String, default: '', index: true },
     dailyWage: { type: Number, default: 0 },
     daysPresent: { type: Number, default: 0 },
     otHours: { type: Number, default: 0 },

@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const staffController_js_1 = require("../controllers/staffController.js");
+const authMiddleware_js_1 = require("../middleware/authMiddleware.js");
 const router = (0, express_1.Router)();
+router.use(authMiddleware_js_1.optionalAuth);
 router.get('/', staffController_js_1.getStaff);
 router.get('/:id', staffController_js_1.getStaffById);
 router.post('/', staffController_js_1.createStaff);

@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const loanAdvanceController_js_1 = require("../controllers/loanAdvanceController.js");
+const authMiddleware_js_1 = require("../middleware/authMiddleware.js");
 const router = (0, express_1.Router)();
+router.use(authMiddleware_js_1.optionalAuth);
 router.get('/', loanAdvanceController_js_1.getLoanAdvanceEntries);
 router.post('/', loanAdvanceController_js_1.createLoanAdvanceEntry);
 router.delete('/:id', loanAdvanceController_js_1.deleteLoanAdvanceEntry);

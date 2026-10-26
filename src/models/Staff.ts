@@ -15,6 +15,7 @@ export interface IStaff extends Document {
   monthlyLoanDeduction?: number;
   autoLoanDeduct?: boolean;
   photo?: string;
+  branchId?: string;
   notes?: string;
   joiningDate?: string;
   status: 'active' | 'inactive';
@@ -26,6 +27,7 @@ const StaffSchema = new Schema<IStaff>(
   {
     id: { type: String, required: true, unique: true, trim: true },
     name: { type: String, required: true, trim: true },
+    branchId: { type: String, default: '', index: true, trim: true },
     designation: { type: String, required: true, default: 'Staff', trim: true },
     phone: { type: String, default: '', trim: true },
     wage: { type: Number, required: true, default: 0, min: 0 },

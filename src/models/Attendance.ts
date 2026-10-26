@@ -5,6 +5,7 @@ export type AttendanceStatus = 'present' | 'half' | 'absent' | 'leave';
 export interface IAttendance extends Document {
   id: string;
   staffId: string;
+  branchId?: string;
   date: string; // YYYY-MM-DD
   status: AttendanceStatus;
   inTime?: string;
@@ -19,6 +20,7 @@ const AttendanceSchema = new Schema<IAttendance>(
   {
     id: { type: String, required: true, unique: true },
     staffId: { type: String, required: true, index: true },
+    branchId: { type: String, default: '', index: true },
     date: { type: String, required: true, index: true },
     status: {
       type: String,

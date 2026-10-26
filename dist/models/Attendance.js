@@ -38,6 +38,7 @@ const mongoose_1 = __importStar(require("mongoose"));
 const AttendanceSchema = new mongoose_1.Schema({
     id: { type: String, required: true, unique: true },
     staffId: { type: String, required: true, index: true },
+    branchId: { type: String, default: '', index: true },
     date: { type: String, required: true, index: true },
     status: {
         type: String,
