@@ -27,7 +27,7 @@ app.use('/api', index_js_1.default);
 // Root Welcome Route
 app.get('/', (_req, res) => {
     res.json({
-        name: 'Shree Lakshmi Bhavan - Staff Salary & Attendance Manager API',
+        name: 'MSS Shree Lakshmi Bhavan - Staff Salary & Attendance Manager API',
         version: '1.0.0',
         documentation: '/api/admin/health',
         status: 'online',

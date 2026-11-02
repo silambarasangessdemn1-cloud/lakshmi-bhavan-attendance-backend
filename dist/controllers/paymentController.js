@@ -46,6 +46,9 @@ const recordPayment = async (req, res) => {
             advance: Number(body.advance) || 0,
             loanDeduct: Number(body.loanDeduct) || 0,
             loanAdded: Number(body.loanAdded) || 0,
+            splitCash: Number(body.splitCash) || 0,
+            splitUpi: Number(body.splitUpi) || 0,
+            splitBank: Number(body.splitBank) || 0,
         };
         if ((0, db_js_1.isUsingFallback)()) {
             // Upsert: replace if existing payment for staffId and month exists to prevent duplicates!

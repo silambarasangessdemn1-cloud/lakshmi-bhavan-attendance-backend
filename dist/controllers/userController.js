@@ -31,7 +31,7 @@ const getUsers = async (req, res) => {
             return res.json({ success: true, count: sanitized.length, data: sanitized });
         }
         const [users, branches] = await Promise.all([
-            User_js_1.UserModel.find().sort({ createdAt: -1 }).lean(),
+            User_js_1.UserModel.find({ username: { $exists: true, $nin: ['', null] } }).sort({ createdAt: -1 }).lean(),
             Branch_js_1.BranchModel.find().lean(),
         ]);
         const sanitized = users.map((u) => sanitizeUser(u, branches));

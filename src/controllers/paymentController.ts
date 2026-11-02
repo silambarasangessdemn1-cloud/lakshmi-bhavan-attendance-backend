@@ -46,6 +46,9 @@ export const recordPayment = async (req: Request, res: Response) => {
       advance: Number(body.advance) || 0,
       loanDeduct: Number(body.loanDeduct) || 0,
       loanAdded: Number(body.loanAdded) || 0,
+      splitCash: Number(body.splitCash) || 0,
+      splitUpi: Number(body.splitUpi) || 0,
+      splitBank: Number(body.splitBank) || 0,
     };
 
     if (isUsingFallback()) {

@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export type PaymentMethod = 'Bank Transfer' | 'Cash' | 'UPI' | 'Cheque';
+export type PaymentMethod = 'Bank Transfer' | 'Cash' | 'UPI' | 'Cheque' | 'Split';
 
 export interface IPayment extends Document {
   id: string;
@@ -21,6 +21,9 @@ export interface IPayment extends Document {
   net: number;
   status: 'Paid' | 'Pending';
   paymentMethod: PaymentMethod;
+  splitCash?: number;
+  splitUpi?: number;
+  splitBank?: number;
   notes: string;
   timestamp: number;
   createdAt: Date;
@@ -48,9 +51,12 @@ const PaymentSchema = new Schema<IPayment>(
     status: { type: String, enum: ['Paid', 'Pending'], default: 'Paid' },
     paymentMethod: {
       type: String,
-      enum: ['Bank Transfer', 'Cash', 'UPI', 'Cheque'],
+      enum: ['Bank Transfer', 'Cash', 'UPI', 'Cheque', 'Split'],
       default: 'Bank Transfer',
     },
+    splitCash: { type: Number, default: 0 },
+    splitUpi: { type: Number, default: 0 },
+    splitBank: { type: Number, default: 0 },
     notes: { type: String, default: '' },
     timestamp: { type: Number, default: () => Date.now() },
   },

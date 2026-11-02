@@ -55,9 +55,12 @@ const PaymentSchema = new mongoose_1.Schema({
     status: { type: String, enum: ['Paid', 'Pending'], default: 'Paid' },
     paymentMethod: {
         type: String,
-        enum: ['Bank Transfer', 'Cash', 'UPI', 'Cheque'],
+        enum: ['Bank Transfer', 'Cash', 'UPI', 'Cheque', 'Split'],
         default: 'Bank Transfer',
     },
+    splitCash: { type: Number, default: 0 },
+    splitUpi: { type: Number, default: 0 },
+    splitBank: { type: Number, default: 0 },
     notes: { type: String, default: '' },
     timestamp: { type: Number, default: () => Date.now() },
 }, { timestamps: true });
