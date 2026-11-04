@@ -15,6 +15,8 @@ export interface IStaff extends Document {
   monthlyLoanDeduction?: number;
   autoLoanDeduct?: boolean;
   photo?: string;
+  aadhaarNumber?: string;
+  aadhaarCard?: string; // Cloudinary image URL or Base64
   branchId?: string;
   notes?: string;
   joiningDate?: string;
@@ -40,6 +42,8 @@ const StaffSchema = new Schema<IStaff>(
     monthlyLoanDeduction: { type: Number, default: 0, min: 0 },
     autoLoanDeduct: { type: Boolean, default: true },
     photo: { type: String, default: '' },
+    aadhaarNumber: { type: String, default: '', trim: true },
+    aadhaarCard: { type: String, default: '' },
     notes: { type: String, default: '', trim: true },
     joiningDate: { type: String, default: '' },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },

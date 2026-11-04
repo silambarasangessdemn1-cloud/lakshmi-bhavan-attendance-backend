@@ -13,6 +13,7 @@ const loanAdvanceRoutes_js_1 = __importDefault(require("./loanAdvanceRoutes.js")
 const paymentRoutes_js_1 = __importDefault(require("./paymentRoutes.js"));
 const settingsRoutes_js_1 = __importDefault(require("./settingsRoutes.js"));
 const adminRoutes_js_1 = __importDefault(require("./adminRoutes.js"));
+const uploadRoutes_js_1 = __importDefault(require("./uploadRoutes.js"));
 const router = (0, express_1.Router)();
 // Authentication and Multi-Branch Management
 router.use('/auth', authRoutes_js_1.default);
@@ -25,4 +26,5 @@ router.use('/loans-advances', loanAdvanceRoutes_js_1.default);
 router.use('/payments', paymentRoutes_js_1.default);
 router.use('/settings', settingsRoutes_js_1.default);
 router.use('/admin', adminRoutes_js_1.default);
+router.use('/upload', uploadRoutes_js_1.default);
 exports.default = router;

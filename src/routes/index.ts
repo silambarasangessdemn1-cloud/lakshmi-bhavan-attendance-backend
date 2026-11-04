@@ -8,6 +8,7 @@ import loanAdvanceRoutes from './loanAdvanceRoutes.js';
 import paymentRoutes from './paymentRoutes.js';
 import settingsRoutes from './settingsRoutes.js';
 import adminRoutes from './adminRoutes.js';
+import uploadRoutes from './uploadRoutes.js';
 
 const router = Router();
 
@@ -23,5 +24,6 @@ router.use('/loans-advances', loanAdvanceRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/admin', adminRoutes);
+router.use('/upload', uploadRoutes);
 
 export default router;

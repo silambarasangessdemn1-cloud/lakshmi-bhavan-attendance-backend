@@ -51,6 +51,8 @@ const StaffSchema = new mongoose_1.Schema({
     monthlyLoanDeduction: { type: Number, default: 0, min: 0 },
     autoLoanDeduct: { type: Boolean, default: true },
     photo: { type: String, default: '' },
+    aadhaarNumber: { type: String, default: '', trim: true },
+    aadhaarCard: { type: String, default: '' },
     notes: { type: String, default: '', trim: true },
     joiningDate: { type: String, default: '' },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
