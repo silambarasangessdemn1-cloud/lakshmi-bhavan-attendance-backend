@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUser = exports.createUser = exports.getUsers = void 0;
+exports.restoreUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUsers = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const User_js_1 = require("../models/User.js");
 const Branch_js_1 = require("../models/Branch.js");
@@ -19,19 +19,37 @@ function sanitizeUser(user, branches = []) {
         branchName: branch ? branch.name : null,
         phone: user.phone || '',
         status: user.status || 'active',
+        isDeleted: !!user.isDeleted,
+        deletedAt: user.deletedAt || null,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
     };
 }
 const getUsers = async (req, res) => {
     try {
+        const includeDeleted = req.query.includeDeleted === 'true';
+        const deletedOnly = req.query.deletedOnly === 'true';
         if ((0, db_js_1.isUsingFallback)()) {
             const branches = db_js_1.fallbackStore.branches || [];
-            const sanitized = (db_js_1.fallbackStore.users || []).map((u) => sanitizeUser(u, branches));
+            let list = db_js_1.fallbackStore.users || [];
+            if (deletedOnly) {
+                list = list.filter((u) => u.isDeleted === true);
+            }
+            else if (!includeDeleted) {
+                list = list.filter((u) => !u.isDeleted);
+            }
+            const sanitized = list.map((u) => sanitizeUser(u, branches));
             return res.json({ success: true, count: sanitized.length, data: sanitized });
         }
+        const filter = { username: { $exists: true, $nin: ['', null] } };
+        if (deletedOnly) {
+            filter.isDeleted = true;
+        }
+        else if (!includeDeleted) {
+            filter.isDeleted = { $ne: true };
+        }
         const [users, branches] = await Promise.all([
-            User_js_1.UserModel.find({ username: { $exists: true, $nin: ['', null] } }).sort({ createdAt: -1 }).lean(),
+            User_js_1.UserModel.find(filter).sort({ createdAt: -1 }).lean(),
             Branch_js_1.BranchModel.find().lean(),
         ]);
         const sanitized = users.map((u) => sanitizeUser(u, branches));
@@ -157,6 +175,7 @@ exports.updateUser = updateUser;
 const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
+        const permanent = req.query.permanent === 'true';
         if (req.user?.id === id) {
             return res.status(400).json({ success: false, message: 'You cannot delete your own account.' });
         }
@@ -165,29 +184,80 @@ const deleteUser = async (req, res) => {
             if (!target)
                 return res.status(404).json({ success: false, message: 'User not found.' });
             if (target.role === 'superadmin') {
-                const superCount = db_js_1.fallbackStore.users.filter((u) => u.role === 'superadmin').length;
+                const superCount = db_js_1.fallbackStore.users.filter((u) => u.role === 'superadmin' && !u.isDeleted).length;
                 if (superCount <= 1) {
-                    return res.status(400).json({ success: false, message: 'Cannot delete the only Super Admin.' });
+                    return res.status(400).json({ success: false, message: 'Cannot delete the only active Super Admin.' });
                 }
             }
-            db_js_1.fallbackStore.users = db_js_1.fallbackStore.users.filter((u) => u.id !== id);
+            if (permanent) {
+                db_js_1.fallbackStore.users = db_js_1.fallbackStore.users.filter((u) => u.id !== id);
+            }
+            else {
+                target.isDeleted = true;
+                target.deletedAt = new Date();
+                target.status = 'inactive';
+            }
             (0, db_js_1.saveFallbackToDisk)();
-            return res.json({ success: true, message: 'User account removed.' });
+            return res.json({
+                success: true,
+                message: permanent ? 'User account permanently removed.' : 'User moved to trash. Can be recovered anytime.',
+            });
         }
         const target = await User_js_1.UserModel.findOne({ id });
         if (!target)
             return res.status(404).json({ success: false, message: 'User not found.' });
         if (target.role === 'superadmin') {
-            const superCount = await User_js_1.UserModel.countDocuments({ role: 'superadmin' });
+            const superCount = await User_js_1.UserModel.countDocuments({ role: 'superadmin', isDeleted: { $ne: true } });
             if (superCount <= 1) {
-                return res.status(400).json({ success: false, message: 'Cannot delete the only Super Admin.' });
+                return res.status(400).json({ success: false, message: 'Cannot delete the only active Super Admin.' });
             }
         }
-        await User_js_1.UserModel.deleteOne({ id });
-        res.json({ success: true, message: 'User account removed.' });
+        if (permanent) {
+            await User_js_1.UserModel.deleteOne({ id });
+        }
+        else {
+            await User_js_1.UserModel.updateOne({ id }, { isDeleted: true, deletedAt: new Date(), status: 'inactive' });
+        }
+        res.json({
+            success: true,
+            message: permanent ? 'User account permanently removed.' : 'User moved to trash. Can be recovered anytime.',
+        });
     }
     catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 exports.deleteUser = deleteUser;
+const restoreUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if ((0, db_js_1.isUsingFallback)()) {
+            const target = (db_js_1.fallbackStore.users || []).find((u) => u.id === id);
+            if (!target)
+                return res.status(404).json({ success: false, message: 'User not found.' });
+            target.isDeleted = false;
+            target.deletedAt = null;
+            target.status = 'active';
+            (0, db_js_1.saveFallbackToDisk)();
+            const branches = db_js_1.fallbackStore.branches || [];
+            return res.json({
+                success: true,
+                message: `Admin ${target.name} restored successfully without any data loss.`,
+                data: sanitizeUser(target, branches),
+            });
+        }
+        const updated = await User_js_1.UserModel.findOneAndUpdate({ id }, { isDeleted: false, deletedAt: null, status: 'active' }, { new: true }).lean();
+        if (!updated)
+            return res.status(404).json({ success: false, message: 'User not found.' });
+        const branches = await Branch_js_1.BranchModel.find().lean();
+        res.json({
+            success: true,
+            message: `Admin ${updated.name} restored successfully without any data loss.`,
+            data: sanitizeUser(updated, branches),
+        });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+exports.restoreUser = restoreUser;

@@ -8,6 +8,8 @@ export interface IBranch extends Document {
   phone?: string;
   address?: string;
   status: 'active' | 'inactive';
+  isDeleted?: boolean;
+  deletedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,6 +23,8 @@ const BranchSchema = new Schema<IBranch>(
     phone: { type: String, default: '', trim: true },
     address: { type: String, default: '', trim: true },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

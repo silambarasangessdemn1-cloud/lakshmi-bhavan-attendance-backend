@@ -12,6 +12,8 @@ export interface IUser extends Document {
   email?: string;
   phone?: string;
   status: 'active' | 'inactive';
+  isDeleted?: boolean;
+  deletedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +29,8 @@ const UserSchema = new Schema<IUser>(
     branchId: { type: String, default: null, trim: true },
     phone: { type: String, default: '', trim: true },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

@@ -45,5 +45,7 @@ const UserSchema = new mongoose_1.Schema({
     branchId: { type: String, default: null, trim: true },
     phone: { type: String, default: '', trim: true },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: { type: Date, default: null },
 }, { timestamps: true });
 exports.UserModel = mongoose_1.default.model('User', UserSchema);

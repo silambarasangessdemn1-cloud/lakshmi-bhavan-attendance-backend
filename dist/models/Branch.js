@@ -43,5 +43,7 @@ const BranchSchema = new mongoose_1.Schema({
     phone: { type: String, default: '', trim: true },
     address: { type: String, default: '', trim: true },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: { type: Date, default: null },
 }, { timestamps: true });
 exports.BranchModel = mongoose_1.default.model('Branch', BranchSchema);
