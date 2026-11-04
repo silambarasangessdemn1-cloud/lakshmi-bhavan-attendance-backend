@@ -27,7 +27,7 @@ export interface IStaff extends Document {
 
 const StaffSchema = new Schema<IStaff>(
   {
-    id: { type: String, required: true, unique: true, trim: true },
+    id: { type: String, required: true, trim: true },
     name: { type: String, required: true, trim: true },
     branchId: { type: String, default: '', index: true, trim: true },
     designation: { type: String, required: true, default: 'Staff', trim: true },
@@ -49,6 +49,16 @@ const StaffSchema = new Schema<IStaff>(
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
   },
   { timestamps: true }
+);
+
+// Global unique case-insensitive index on staff id across all branches
+StaffSchema.index(
+  { id: 1 },
+  {
+    unique: true,
+    collation: { locale: 'en', strength: 2 },
+    name: 'id_unique_case_insensitive',
+  }
 );
 
 export const StaffModel = mongoose.model<IStaff>('Staff', StaffSchema);

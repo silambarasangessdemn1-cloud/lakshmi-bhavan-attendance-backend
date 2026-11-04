@@ -46,7 +46,7 @@ const getStaffById = async (req, res) => {
                 return res.status(404).json({ success: false, message: 'Staff member not found' });
             return res.json({ success: true, data: found });
         }
-        const staff = await Staff_js_1.StaffModel.findOne({ id });
+        const staff = await Staff_js_1.StaffModel.findOne({ id }).collation({ locale: 'en', strength: 2 });
         if (!staff)
             return res.status(404).json({ success: false, message: 'Staff member not found' });
         res.json({ success: true, data: staff });
@@ -88,7 +88,7 @@ const createStaff = async (req, res) => {
             (0, db_js_1.saveFallbackToDisk)();
             return res.status(201).json({ success: true, data: payload });
         }
-        const existing = await Staff_js_1.StaffModel.findOne({ id: trimmedId });
+        const existing = await Staff_js_1.StaffModel.findOne({ id: trimmedId }).collation({ locale: 'en', strength: 2 });
         if (existing) {
             return res.status(409).json({ success: false, message: `Staff ID "${trimmedId}" already exists.` });
         }
@@ -122,7 +122,7 @@ const updateStaff = async (req, res) => {
             return res.json({ success: true, data: db_js_1.fallbackStore.staff[idx] });
         }
         if (newId !== id) {
-            const conflict = await Staff_js_1.StaffModel.findOne({ id: newId });
+            const conflict = await Staff_js_1.StaffModel.findOne({ id: newId }).collation({ locale: 'en', strength: 2 });
             if (conflict) {
                 return res.status(409).json({ success: false, message: `Staff ID "${newId}" already in use.` });
             }
