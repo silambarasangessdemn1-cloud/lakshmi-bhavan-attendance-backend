@@ -17,6 +17,7 @@ export interface FallbackData {
   settings: any;
   branches: any[];
   users: any[];
+  transferRequests?: any[];
 }
 
 export const fallbackStore: FallbackData = {
@@ -26,6 +27,7 @@ export const fallbackStore: FallbackData = {
   payments: [],
   branches: [],
   users: [],
+  transferRequests: [],
   settings: {
     companyName: 'Shree Lakshmi Bhavan',
     tagline: 'Staff Salary & Attendance Manager',

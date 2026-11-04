@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const transferController_js_1 = require("../controllers/transferController.js");
+const authMiddleware_js_1 = require("../middleware/authMiddleware.js");
+const router = (0, express_1.Router)();
+router.use(authMiddleware_js_1.authenticateToken);
+router.get('/', transferController_js_1.getTransferRequests);
+router.post('/', transferController_js_1.createTransferRequest);
+router.put('/:id/respond', transferController_js_1.respondToTransferRequest);
+exports.default = router;

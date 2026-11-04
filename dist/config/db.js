@@ -23,6 +23,7 @@ exports.fallbackStore = {
     payments: [],
     branches: [],
     users: [],
+    transferRequests: [],
     settings: {
         companyName: 'Shree Lakshmi Bhavan',
         tagline: 'Staff Salary & Attendance Manager',

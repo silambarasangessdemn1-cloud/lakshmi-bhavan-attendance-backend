@@ -14,6 +14,7 @@ const paymentRoutes_js_1 = __importDefault(require("./paymentRoutes.js"));
 const settingsRoutes_js_1 = __importDefault(require("./settingsRoutes.js"));
 const adminRoutes_js_1 = __importDefault(require("./adminRoutes.js"));
 const uploadRoutes_js_1 = __importDefault(require("./uploadRoutes.js"));
+const transferRoutes_js_1 = __importDefault(require("./transferRoutes.js"));
 const router = (0, express_1.Router)();
 // Authentication and Multi-Branch Management
 router.use('/auth', authRoutes_js_1.default);
@@ -21,6 +22,7 @@ router.use('/branches', branchRoutes_js_1.default);
 router.use('/users', userRoutes_js_1.default);
 // Core Modules
 router.use('/staff', staffRoutes_js_1.default);
+router.use('/transfers', transferRoutes_js_1.default);
 router.use('/attendance', attendanceRoutes_js_1.default);
 router.use('/loans-advances', loanAdvanceRoutes_js_1.default);
 router.use('/payments', paymentRoutes_js_1.default);

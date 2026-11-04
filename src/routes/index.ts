@@ -9,6 +9,7 @@ import paymentRoutes from './paymentRoutes.js';
 import settingsRoutes from './settingsRoutes.js';
 import adminRoutes from './adminRoutes.js';
 import uploadRoutes from './uploadRoutes.js';
+import transferRoutes from './transferRoutes.js';
 
 const router = Router();
 
@@ -19,6 +20,7 @@ router.use('/users', userRoutes);
 
 // Core Modules
 router.use('/staff', staffRoutes);
+router.use('/transfers', transferRoutes);
 router.use('/attendance', attendanceRoutes);
 router.use('/loans-advances', loanAdvanceRoutes);
 router.use('/payments', paymentRoutes);
