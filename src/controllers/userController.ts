@@ -26,6 +26,7 @@ export const getUsers = async (req: Request, res: Response) => {
   try {
     const includeDeleted = req.query.includeDeleted === 'true';
     const deletedOnly = req.query.deletedOnly === 'true';
+    const branchId = (req.query.branchId as string) || '';
 
     if (isUsingFallback()) {
       const branches = fallbackStore.branches || [];
@@ -34,6 +35,9 @@ export const getUsers = async (req: Request, res: Response) => {
         list = list.filter((u) => u.isDeleted === true);
       } else if (!includeDeleted) {
         list = list.filter((u) => !u.isDeleted);
+      }
+      if (branchId && branchId !== 'all') {
+        list = list.filter((u) => u.branchId === branchId);
       }
       const sanitized = list.map((u) => sanitizeUser(u, branches));
       return res.json({ success: true, count: sanitized.length, data: sanitized });
@@ -44,6 +48,9 @@ export const getUsers = async (req: Request, res: Response) => {
       filter.isDeleted = true;
     } else if (!includeDeleted) {
       filter.isDeleted = { $ne: true };
+    }
+    if (branchId && branchId !== 'all') {
+      filter.branchId = branchId;
     }
 
     const [users, branches] = await Promise.all([
