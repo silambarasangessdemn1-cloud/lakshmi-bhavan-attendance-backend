@@ -8,16 +8,34 @@ import { isUsingFallback, fallbackStore, saveFallbackToDisk } from '../config/db
 export const getBranches = async (req: Request, res: Response) => {
   try {
     const user = req.user;
+    const includeDeleted = req.query.includeDeleted === 'true';
+    const deletedOnly = req.query.deletedOnly === 'true';
+    const forTransfer = req.query.forTransfer === 'true';
+
     if (isUsingFallback()) {
       let branches = fallbackStore.branches || [];
-      if (user && user.role !== 'superadmin' && user.branchId) {
+      if (deletedOnly) {
+        branches = branches.filter((b) => b.isDeleted === true);
+      } else if (!includeDeleted) {
+        branches = branches.filter((b) => !b.isDeleted);
+      }
+
+      // If not querying for transfers, branch admin sees only their branch
+      if (!forTransfer && user && user.role !== 'superadmin' && user.branchId) {
         branches = branches.filter((b) => b.id === user.branchId);
       }
       return res.json({ success: true, count: branches.length, data: branches });
     }
 
     const query: any = {};
-    if (user && user.role !== 'superadmin' && user.branchId) {
+    if (deletedOnly) {
+      query.isDeleted = true;
+    } else if (!includeDeleted) {
+      query.isDeleted = { $ne: true };
+    }
+
+    // If not querying for transfers, branch admin sees only their branch
+    if (!forTransfer && user && user.role !== 'superadmin' && user.branchId) {
       query.id = user.branchId;
     }
 
@@ -244,8 +262,9 @@ export const updateBranch = async (req: Request, res: Response) => {
 export const deleteBranch = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const permanent = req.query.permanent === 'true';
 
-    // Check if staff belong to this branch
+    // Check if staff belong to this branch (unless permanently deleting an already soft-deleted branch or checking active staff)
     let staffCount = 0;
     if (isUsingFallback()) {
       staffCount = (fallbackStore.staff || []).filter((s) => s.branchId === id).length;
@@ -261,19 +280,115 @@ export const deleteBranch = async (req: Request, res: Response) => {
     }
 
     if (isUsingFallback()) {
-      fallbackStore.branches = (fallbackStore.branches || []).filter((b) => b.id !== id);
-      // Remove branch admins belonging to this branch
-      fallbackStore.users = (fallbackStore.users || []).filter((u) => u.branchId !== id);
+      if (permanent) {
+        fallbackStore.branches = (fallbackStore.branches || []).filter((b) => b.id !== id);
+        fallbackStore.users = (fallbackStore.users || []).filter((u) => u.branchId !== id);
+      } else {
+        const branch = (fallbackStore.branches || []).find((b) => b.id === id);
+        if (!branch) {
+          return res.status(404).json({ success: false, message: 'Branch not found.' });
+        }
+        branch.isDeleted = true;
+        branch.deletedAt = new Date();
+        branch.status = 'inactive';
+
+        // Also soft-delete admin accounts belonging to this branch
+        (fallbackStore.users || []).forEach((u) => {
+          if (u.branchId === id) {
+            u.isDeleted = true;
+            u.deletedAt = new Date();
+            u.status = 'inactive';
+          }
+        });
+      }
       saveFallbackToDisk();
-      return res.json({ success: true, message: 'Branch and associated admin accounts deleted.' });
+      return res.json({
+        success: true,
+        message: permanent ? 'Branch and associated admin accounts permanently deleted.' : 'Branch moved to trash. Can be recovered anytime.',
+      });
+    }
+
+    if (permanent) {
+      await Promise.all([
+        BranchModel.deleteOne({ id }),
+        UserModel.deleteMany({ branchId: id }),
+      ]);
+    } else {
+      const now = new Date();
+      await Promise.all([
+        BranchModel.updateOne(
+          { id },
+          { isDeleted: true, deletedAt: now, status: 'inactive' }
+        ),
+        UserModel.updateMany(
+          { branchId: id },
+          { isDeleted: true, deletedAt: now, status: 'inactive' }
+        ),
+      ]);
+    }
+
+    res.json({
+      success: true,
+      message: permanent ? 'Branch and associated admin accounts permanently deleted.' : 'Branch moved to trash. Can be recovered anytime.',
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const restoreBranch = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (isUsingFallback()) {
+      const branch = (fallbackStore.branches || []).find((b) => b.id === id);
+      if (!branch) {
+        return res.status(404).json({ success: false, message: 'Branch not found in trash.' });
+      }
+
+      branch.isDeleted = false;
+      branch.deletedAt = null;
+      branch.status = 'active';
+
+      // Restore associated admins
+      (fallbackStore.users || []).forEach((u) => {
+        if (u.branchId === id) {
+          u.isDeleted = false;
+          u.deletedAt = null;
+          u.status = 'active';
+        }
+      });
+
+      saveFallbackToDisk();
+      return res.json({
+        success: true,
+        message: 'Branch and associated admin accounts recovered successfully.',
+        data: branch,
+      });
+    }
+
+    const branch = await BranchModel.findOne({ id });
+    if (!branch) {
+      return res.status(404).json({ success: false, message: 'Branch not found in trash.' });
     }
 
     await Promise.all([
-      BranchModel.deleteOne({ id }),
-      UserModel.deleteMany({ branchId: id }),
+      BranchModel.updateOne(
+        { id },
+        { isDeleted: false, deletedAt: null, status: 'active' }
+      ),
+      UserModel.updateMany(
+        { branchId: id },
+        { isDeleted: false, deletedAt: null, status: 'active' }
+      ),
     ]);
 
-    res.json({ success: true, message: 'Branch and associated admin accounts deleted.' });
+    const restored = await BranchModel.findOne({ id });
+    res.json({
+      success: true,
+      message: 'Branch and associated admin accounts recovered successfully.',
+      data: restored,
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
