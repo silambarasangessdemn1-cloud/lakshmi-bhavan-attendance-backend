@@ -331,18 +331,10 @@ const restoreBranch = async (req, res) => {
             branch.isDeleted = false;
             branch.deletedAt = null;
             branch.status = 'active';
-            // Restore associated admins
-            (db_js_1.fallbackStore.users || []).forEach((u) => {
-                if (u.branchId === id) {
-                    u.isDeleted = false;
-                    u.deletedAt = null;
-                    u.status = 'active';
-                }
-            });
             (0, db_js_1.saveFallbackToDisk)();
             return res.json({
                 success: true,
-                message: 'Branch and associated admin accounts recovered successfully.',
+                message: 'Branch recovered successfully. You can also recover its admin account from Trash if needed.',
                 data: branch,
             });
         }
@@ -350,14 +342,11 @@ const restoreBranch = async (req, res) => {
         if (!branch) {
             return res.status(404).json({ success: false, message: 'Branch not found in trash.' });
         }
-        await Promise.all([
-            Branch_js_1.BranchModel.updateOne({ id }, { isDeleted: false, deletedAt: null, status: 'active' }),
-            User_js_1.UserModel.updateMany({ branchId: id }, { isDeleted: false, deletedAt: null, status: 'active' }),
-        ]);
+        await Branch_js_1.BranchModel.updateOne({ id }, { isDeleted: false, deletedAt: null, status: 'active' });
         const restored = await Branch_js_1.BranchModel.findOne({ id });
         res.json({
             success: true,
-            message: 'Branch and associated admin accounts recovered successfully.',
+            message: 'Branch recovered successfully. You can also recover its admin account from Trash if needed.',
             data: restored,
         });
     }

@@ -242,6 +242,15 @@ const restoreUser = async (req, res) => {
             const target = (db_js_1.fallbackStore.users || []).find((u) => u.id === id);
             if (!target)
                 return res.status(404).json({ success: false, message: 'User not found.' });
+            // If assigned to a deleted branch, also restore the branch to keep data valid
+            if (target.branchId) {
+                const assignedBranch = (db_js_1.fallbackStore.branches || []).find((b) => b.id === target.branchId);
+                if (assignedBranch && assignedBranch.isDeleted) {
+                    assignedBranch.isDeleted = false;
+                    assignedBranch.deletedAt = null;
+                    assignedBranch.status = 'active';
+                }
+            }
             target.isDeleted = false;
             target.deletedAt = null;
             target.status = 'active';
@@ -252,6 +261,13 @@ const restoreUser = async (req, res) => {
                 message: `Admin ${target.name} restored successfully without any data loss.`,
                 data: sanitizeUser(target, branches),
             });
+        }
+        const targetUser = await User_js_1.UserModel.findOne({ id });
+        if (!targetUser)
+            return res.status(404).json({ success: false, message: 'User not found.' });
+        // If assigned to a deleted branch, also restore that branch so the admin isn't orphaned
+        if (targetUser.branchId) {
+            await Branch_js_1.BranchModel.updateOne({ id: targetUser.branchId, isDeleted: true }, { isDeleted: false, deletedAt: null, status: 'active' });
         }
         const updated = await User_js_1.UserModel.findOneAndUpdate({ id }, { isDeleted: false, deletedAt: null, status: 'active' }, { new: true }).lean();
         if (!updated)
